@@ -1,18 +1,14 @@
 {
-  "name": "ses-service",
+  "name": "ses-lambda",
   "version": "1.0.0",
-  "description": "",
+  "description": "This service sends out emails using SES and with API Gateway. And can be used to send out notification/mail for some transactional activity.",
   "main": "handler.js",
   "dependencies": {
-    "node-ses": "^2.2.0",
-    "offline": "0.0.1",
-    "serverless": "^1.41.1",
-    "serverless-offline": "^4.9.4"
+    "aws-sdk": "^2.1153.0"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Paras Jain",
   "license": "ISC"
 }

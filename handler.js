@@ -1,34 +1,48 @@
 'use strict';
-var ses = require('node-ses')
-const client = ses.createClient({ key: process.env.SES_KEY, secret: process.env.SES_SECRET });
+var aws = require('aws-sdk');
+var ses = new aws.SES({ region: "ap-south-1" });
 
-const sendMail =  async (subject, message, to)=> {
+const sendMail = async (message) => {
   let res = false;
 
-  return new Promise((resolve , reject)=>{
-    client.sendEmail({
-      to: to
-    , from: process.env.SENDER_EMAIL
-    , subject: subject
-    , message: message
-    , altText: 'plain text'
-   }, function (err, data, res) {
-     console.log('err', err)
-     if (err) { reject(err); return }
+  var params = {
+    Destination: {
+        ToAddresses : ['connect@neemtreeagrico.in']
+    },
+    Message: {
+        Body: {
+            Html: { 
+                Charset: "UTF-8",
+                Data : message
+            }
+        },
+        Subject: {
+            Charset: "UTF-8",
+            Data : 'Website Query || Contact Us'
+        }
+    },
+    Source: process.env.SENDER_EMAIL
+}
 
-     console.log('data', data)
-     console.log('res', res)
-     resolve(data); 
-     return
-   });
-  }) 
+  return new Promise((resolve, reject) => {
+    ses.sendEmail(params,
+      function (err, data, res) {
+        console.log('err', err)
+        if (err) { reject(err); return }
+
+        console.log('data', data)
+        console.log('res', res)
+        resolve(data);
+        return
+      });
+  })
 }
 
 module.exports.mailer = async (event) => {
   const eventData = JSON.parse(event.body);
-  const {subject, message, to} = eventData
+  const { message } = eventData
   // const message = `Request received from ${name} email: ${email}`
-  const res = await sendMail(subject, message, to)//then( res => {
+  const res = await sendMail(message)//then( res => {
   return {
     statusCode: 200,
     headers: {
@@ -36,7 +50,7 @@ module.exports.mailer = async (event) => {
       'Access-Control-Allow-Credentials': true,
     },
     body: JSON.stringify({
-      message: `Go Serverless v1.0! Your function executed successfully! with status ${res}`,
+      message: `Your function executed successfully! with status ${res}`,
     }, null, 2),
   };
 };
