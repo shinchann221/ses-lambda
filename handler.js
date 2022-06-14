@@ -1,56 +1,53 @@
-'use strict';
-var aws = require('aws-sdk');
-var ses = new aws.SES({ region: "ap-south-1" });
+const nodemailer = require("nodemailer");
 
-const sendMail = async (message) => {
-  let res = false;
 
-  var params = {
-    Destination: {
-        ToAddresses : ['connect@neemtreeagrico.in']
-    },
-    Message: {
-        Body: {
-            Html: { 
-                Charset: "UTF-8",
-                Data : message
-            }
-        },
-        Subject: {
-            Charset: "UTF-8",
-            Data : 'Website Query || Contact Us'
-        }
-    },
-    Source: process.env.SENDER_EMAIL
-}
+//edit this
+const transporter = nodemailer.createTransport({
+    host: "smtp.zoho.com",
+    port: 465,
+    secure: true,
+    auth: {
+        user: process.env.SENDER_EMAIL,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
-  return new Promise((resolve, reject) => {
-    ses.sendEmail(params,
-      function (err, data, res) {
-        console.log('err', err)
-        if (err) { reject(err); return }
+const sendMail = async (message,subject) => {
+    let res = false;
+  
+    const params = {
+        to: process.env.TO_EMAIL,
+        from: process.env.SENDER_EMAIL,
+        subject: subject,
+        text: message,
+    };
+  
+    return new Promise((resolve, reject) => {
+      transporter.sendMail(params,
+        function (err, data, res) {
+          console.log('err', err)
+          if (err) { reject(err); return }
+  
+          console.log('data', data)
+          console.log('res', res)
+          resolve(data);
+          return
+        });
+    })
+  }
 
-        console.log('data', data)
-        console.log('res', res)
-        resolve(data);
-        return
-      });
-  })
-}
-
-module.exports.mailer = async (event) => {
-  const eventData = JSON.parse(event.body);
-  const { message } = eventData
-  // const message = `Request received from ${name} email: ${email}`
-  const res = await sendMail(message)//then( res => {
-  return {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-    body: JSON.stringify({
-      message: `Your function executed successfully! with status ${res}`,
-    }, null, 2),
+  module.exports.mailer = async (event) => {
+    const eventData = JSON.parse(event.body);
+    const { message , subject} = eventData
+    const res = await sendMail(message,subject)
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        message: `Your function executed successfully! with status ${res}`,
+      }, null, 2),
+    };
   };
-};

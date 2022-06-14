@@ -5,11 +5,12 @@ provider:
   runtime: nodejs12.x
   profile: serverless-email
   region: ap-south-1
-  stage: prod
+  stage: production
 
 
 functions:
   mailer:
+    name: ses-lambda
     handler: handler.mailer
     events:
       - http:
@@ -18,5 +19,7 @@ functions:
           cors: true
 
     environment:
-      SENDER_EMAIL: admin@neemtreeagrico.in
+      SENDER_EMAIL: #fill this
+      EMAIL_PASS: #fill this
+      TO_EMAIL: #fill this
 
